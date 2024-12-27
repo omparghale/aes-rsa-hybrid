@@ -1,10 +1,42 @@
 #include <iostream>
 #include <string>
-#include<bitset>
+#include <bitset>
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cstdint>
 #include "encoding_utils.h"
+
+const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+std::string int2base64(uint64_t num)
+{
+  if(num==0)
+    return "A===";
+  std::string base64_str;
+  std::string binary = std::bitset<64ULL>(num).to_string(); // convert uint6_t to binary string
+  while (binary.at(0) != '1')
+  {
+    binary.erase(binary.begin()); // erase leading 0s
+  }
+  int len = binary.length();
+  int r = len % 6;
+  if(r>0)
+    binary.append(6 - r, '0');
+
+  len = binary.length();
+
+  int pad_tok = (len / 6) % 4 != 0 ? 4 - ((len / 6) % 4) : 0;
+  for (int i = 0; i < len;i += 6)
+  {
+    uint64_t intermediate = std::strtoull(binary.substr(i, 6).c_str(), 0, 2);
+    base64_str += base64_chars[intermediate];
+  }
+  
+  base64_str.append(pad_tok, '=');
+
+  return base64_str;
+}
 
 // Converts a ASCII value to string
 std::string ascii2text_str(uint64_t num)
@@ -98,10 +130,8 @@ uint64_t text2ascii_int(std::string s)
   return std::strtoull(s.c_str(), NULL, 0);
 }
 
-
-
-  // std::string ans = std::bitset<128>(65110117115104107).to_string();
-  // while (ans.at(0) != '1')
-  // {
-  //   ans.erase(ans.begin());
-  // }
+// std::string ans = std::bitset<128>(65110117115104107).to_string();
+// while (ans.at(0) != '1')
+// {
+//   ans.erase(ans.begin());
+// }
