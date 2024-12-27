@@ -101,6 +101,6 @@ void rsa_pipeline(uint64_t msg)
 
 int main()
 {
-  
+  std::cout << int2base64(0);
   return 0;
 }
