@@ -5,38 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <cstdint>
+#include <cstring>
 #include "encoding_utils.h"
-
-const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-std::string int2base64(uint64_t num)
-{
-  if(num==0)
-    return "A===";
-  std::string base64_str;
-  std::string binary = std::bitset<64ULL>(num).to_string(); // convert uint6_t to binary string
-  while (binary.at(0) != '1')
-  {
-    binary.erase(binary.begin()); // erase leading 0s
-  }
-  int len = binary.length();
-  int r = len % 6;
-  if(r>0)
-    binary.append(6 - r, '0');
-
-  len = binary.length();
-
-  int pad_tok = (len / 6) % 4 != 0 ? 4 - ((len / 6) % 4) : 0;
-  for (int i = 0; i < len;i += 6)
-  {
-    uint64_t intermediate = std::strtoull(binary.substr(i, 6).c_str(), 0, 2);
-    base64_str += base64_chars[intermediate];
-  }
-  
-  base64_str.append(pad_tok, '=');
-
-  return base64_str;
-}
 
 // Converts a ASCII value to string
 std::string ascii2text_str(uint64_t num)
@@ -130,8 +100,87 @@ uint64_t text2ascii_int(std::string s)
   return std::strtoull(s.c_str(), NULL, 0);
 }
 
-// std::string ans = std::bitset<128>(65110117115104107).to_string();
-// while (ans.at(0) != '1')
-// {
-//   ans.erase(ans.begin());
-// }
+// Base64 encoding-decoding logic adapted from René Nyffenegger's implementation
+// (http://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp/).
+
+std::string encode_base64(const uint64_t &data)
+{
+  // Base64 character set
+  std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+  // uint64_t to vector of bytes
+  std::vector<uint8_t> binary(
+      reinterpret_cast<const uint8_t *>(&data),
+      reinterpret_cast<const uint8_t *>(&data) + sizeof(data));
+
+  int padding_tok = 0; // Counter for padding tokens ('=')
+  std::string encode;  // result
+
+  // Process input bytes into chunks for 3 (24bits)
+  for (size_t i = 0; i < binary.size(); i += 3)
+  {
+    uint32_t buffer = 0; // 24bit / 3 byte buffer
+    size_t bytes_to_encode = std::min(size_t(3), binary.size() - i);
+
+    // Pack bytes into 24bit buffer
+    for (size_t j = 0; j < bytes_to_encode; ++j)
+    {
+      buffer |= (binary[i + j] << (16 - 8 * j));
+    }
+    // Encode 6bits at a time
+    for (size_t j = 0; j < 4; ++j)
+    {
+      if (j <= bytes_to_encode + 1)
+      {
+        // Extract 6 bits from 24bit buffer and map against base64_chars
+        encode += base64_chars[(buffer >> (18 - 6 * j)) & 0x3f];
+      }
+      else
+      {
+        // Add '=' for padding if fewer than 3 bytes in this chunk
+        encode += '=';
+        padding_tok++;
+      }
+    }
+  }
+  return encode;
+}
+
+uint64_t decode_base64(const std::string &encoded_string)
+{
+  std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  std::vector<uint8_t> decoded; // Stores decoded bytes
+  uint64_t decoded_int = 0;
+  size_t pos = 0;
+  size_t len = encoded_string.length();
+
+  while (pos + 3 < len)
+  {
+    // Find positions of the current 4 characters in the Base64 table
+    unsigned int char0_pos = base64_chars.find(encoded_string[pos]);
+    unsigned int char1_pos = base64_chars.find(encoded_string[pos + 1]);
+    unsigned int char2_pos = base64_chars.find(encoded_string[pos + 2]);
+    unsigned int char3_pos = base64_chars.find(encoded_string[pos + 3]);
+
+    // Stop if padding character '=' is encountered
+    if (encoded_string[pos + 1] == '=' || encoded_string[pos + 2] == '=')
+    {
+      break;
+    }
+
+    decoded.push_back((char0_pos << 2) | (char1_pos >> 4));   // Decode the first byte
+
+    if (encoded_string[pos + 2] != '=')
+    {
+      decoded.push_back(((char1_pos & 0b1111) << 4) | (char2_pos >> 2));
+    }
+
+    if (encoded_string[pos + 3] != '=')
+    {
+      decoded.push_back(((char2_pos & 0b11) << 6 | (char3_pos)));
+    }
+    pos += 4;
+  }
+  memcpy(&decoded_int, decoded.data(), std::min(sizeof(decoded_int), decoded.size()));
+  return decoded_int;
+}
