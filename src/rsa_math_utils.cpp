@@ -22,7 +22,7 @@ uint64_t mod_exp(uint64_t base, uint64_t exp, uint64_t mod)
 
   for (int i = bit_length - 1; i >= 0; --i)
   {
-    currVal = (currVal * currVal) % m; // square
+    currVal = (currVal * currVal) % m;
     if ((e >> i) & 1)
     {
       currVal = (currVal * b) % m;
@@ -44,6 +44,8 @@ bool primality_check(uint64_t num)
   // decompose n-1 => d.2^m
   uint64_t m = 0;
   uint64_t d = num - 1;
+
+  // Check divisors of n-1
   while (d % 2 == 0)
   {
     d /= 2;
@@ -52,7 +54,7 @@ bool primality_check(uint64_t num)
 
   std::random_device rd;
   std::mt19937 generator(rd());
-  std::uniform_int_distribution<uint64_t> dist(2, num - 2); // witness a => {2 <= a <= n-2}
+  std::uniform_int_distribution<uint64_t> dist(2, num - 2);
 
   int num_witness = 10;
 
@@ -70,7 +72,7 @@ bool primality_check(uint64_t num)
       for (int i = 0; i < m - 1; ++i)
       {
 
-        // Iterative squaring => b_i = (b_i-1)^2 mod(num)
+        // Square and reduce modulo num
         b_0 = (b_0 * b_0) % num;
         if (b_0 == 1)
           return false;
@@ -144,12 +146,10 @@ int64_t eea_coeff(int64_t a, int64_t b)
       break;
     }
 
-    // Update x-coefficients for x
     x = x_0 - q * x_1;
     x_0 = x_1;
     x_1 = x;
 
-    // Update y-coefficients
     y = y_0 - q * y_1;
     y_0 = y_1;
     y_1 = y;
