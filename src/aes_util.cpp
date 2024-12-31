@@ -7,7 +7,6 @@
  *   the hybrid encryption workflow while allowing the focus to remain on RSA's foundational principles.
  */
 
-#include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
@@ -109,54 +108,56 @@ int decrypt(const std::vector<byte> &ciphertext, int ciphertext_len,
   return decryptedtext_len;
 }
 
-// int main()
-// {
-//   // Generate a random 128-bit AES key and initialization vector (IV)
-//   std::vector<byte> key = generate16bytes();
-//   std::vector<byte> iv = generate16bytes();
+/*
+int main()
+{
+  // Generate a random 128-bit AES key and initialization vector (IV)
+  std::vector<byte> key = generate16bytes();
+  std::vector<byte> iv = generate16bytes();
 
-//   // Plaintext message to encrypt
-//   std::string msg = "And sometimes I am sorry when the grass\n"
-//                     "Is growing over the stones in quiet hollows\n"
-//                     "And the cocksfoot leans across the rutted cart-pass\n"
-//                     "That I am not the voice of country fellows\n"
-//                     "Who now are standing by some headland talking\n"
-//                     "Of turnips and potatoes or young corn\n"
-//                     "Of turf banks stripped for victory.\n"
-//                     "Here Peace is still hawking\n"
-//                     "His coloured combs and scarves and beads of horn.\n\n"
-//                     "Upon a headland by a whinny hedge\n"
-//                     "A hare sits looking down a leaf-lapped furrow\n"
-//                     "There's an old plough upside-down on a weedy ridge\n"
-//                     "And someone is shouldering home a saddle-harrow.\n"
-//                     "Out of that childhood country what fools climb\n"
-//                     "To fight with tyrants Love and Life and Time?";
+  // Plaintext message to encrypt
+  std::string msg = "And sometimes I am sorry when the grass\n"
+                    "Is growing over the stones in quiet hollows\n"
+                    "And the cocksfoot leans across the rutted cart-pass\n"
+                    "That I am not the voice of country fellows\n"
+                    "Who now are standing by some headland talking\n"
+                    "Of turnips and potatoes or young corn\n"
+                    "Of turf banks stripped for victory.\n"
+                    "Here Peace is still hawking\n"
+                    "His coloured combs and scarves and beads of horn.\n\n"
+                    "Upon a headland by a whinny hedge\n"
+                    "A hare sits looking down a leaf-lapped furrow\n"
+                    "There's an old plough upside-down on a weedy ridge\n"
+                    "And someone is shouldering home a saddle-harrow.\n"
+                    "Out of that childhood country what fools climb\n"
+                    "To fight with tyrants Love and Life and Time?";
 
-//   const byte *plaintext = reinterpret_cast<const byte *>(msg.data()); // Cast to byte*
-//   int plaintext_len = msg.size();
+  const byte *plaintext = reinterpret_cast<const byte *>(msg.data()); // Cast to byte*
+  int plaintext_len = msg.size();
 
-//   // Buffers for ciphertext and decrypted text
-//   std::vector<byte> ciphertext;
-//   std::vector<byte> decryptedtext;
+  // Buffers for ciphertext and decrypted text
+  std::vector<byte> ciphertext;
+  std::vector<byte> decryptedtext;
 
-//   int decryptedtext_len, ciphertext_len; // Variables to store lengths
+  int decryptedtext_len, ciphertext_len; // Variables to store lengths
 
-//   // Encrypt the plaintext
-//   ciphertext_len = encrypt(plaintext, plaintext_len, key, iv, ciphertext);
+  // Encrypt the plaintext
+  ciphertext_len = encrypt(plaintext, plaintext_len, key, iv, ciphertext);
 
-//   // Cast ciphertext binaries to a string
-//   std::string ciphertext_str(ciphertext.begin(), ciphertext.end());
-//   std::cout << "Ciphertext: \n"
-//             << ciphertext_str << "\n"
-//             << std::endl;
+  // Cast ciphertext binaries to a string
+  std::string ciphertext_str(ciphertext.begin(), ciphertext.end());
+  std::cout << "Ciphertext: \n"
+            << ciphertext_str << "\n"
+            << std::endl;
 
-//   // Decrypt the ciphertext
-//   decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv, decryptedtext);
+  // Decrypt the ciphertext
+  decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv, decryptedtext);
 
-//   // Cast decrypted plaintext binaries to a string
-//   std::string decryptedtext_str(decryptedtext.begin(), decryptedtext.end());
-//   std::cout << "Decrypted text: \n"
-//             << decryptedtext_str << std::endl;
+  // Cast decrypted plaintext binaries to a string
+  std::string decryptedtext_str(decryptedtext.begin(), decryptedtext.end());
+  std::cout << "Decrypted text: \n"
+            << decryptedtext_str << std::endl;
 
-//   return 0;
-// }
+  return 0;
+}
+*/
