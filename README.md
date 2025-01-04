@@ -1,10 +1,11 @@
-# RSA and AES Hybrid Encryption System
+# RSA-AES Hybrid Cryptosystem
+> ⚠️ **Caution**: This project is for ***educational purposes only*** and is ***not*** suitable for production use.
 ## Overview
 This project implements a hybrid encryption system combining:
 * **RSA (Rivest-Shamir-Adleman)**: A widely-used asymmetric encryption algorithm.
 * **AES (Advanced Encryption Standard)**: A symmetric encryption algorithm for efficient data encryption.
   
-The primary goal of this project is educational, focusing on implementing RSA from scratch in C++ without relying on third-party cryptographic libraries for RSA. 
+This project aims to demonstrate the implementation of RSA from scratch in C++ without relying on third-party cryptographic libraries for RSA. 
 While AES uses OpenSSL for reliable symmetric encryption, RSA has been built using fundamental principles like modular arithmetic, primality testing, and PKCS#1 padding.
 ## Key Points
 * **Not Production-Ready**: This implementation is designed as a learning exercise. It uses a small 64-bit RSA key size for simplicity and computational feasibility.
