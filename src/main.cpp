@@ -89,7 +89,9 @@ int main()
          "                    Public key: " +
          sha256str(std::to_string(k_pub)) +
          ",\n                    Private key: " +
-         sha256str(std::to_string(k_priv)));
+         sha256str(std::to_string(k_priv)) +
+         "\n                    Note: RSA keys are "
+         "hashed (SHA-256) before logging for security purposes.");
   Logger("Base64 encoded public key exported to: " + pubKey_path);
   Logger("Base64 encoded private key exported to: " + privKey_path);
 
