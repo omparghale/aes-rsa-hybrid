@@ -1,3 +1,12 @@
+/*
+ * In real-world systems:
+ * - RSA keys are stored in ASN.1/DER format for compatibility.
+ * - Public keys are shared in PEM format (Base64-encoded ASN.1).
+ * - Private keys are securely stored in systems like HSMs or encrypted files.
+ *
+ * This project simplifies key handling for learning purposes and does not use these standards.
+ */
+
 #ifndef RSA_H
 #define RSA_H
 
