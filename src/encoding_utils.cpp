@@ -5,15 +5,13 @@
 #include <sstream>
 #include <cstdint>
 #include <cstring>
-#include<iomanip>
-#include <openssl/evp.h> 
+#include <iomanip>
+#include <openssl/evp.h>
 #include "encoding_utils.h"
 #include "aes_util.h"
 
-
 // Base64 encoding-decoding logic adapted from René Nyffenegger's implementation
 // (http://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp/).
-  
 
 // Encodes a 64 bit integer into a Base64 string
 std::string encode_base64(const uint64_t &data)
@@ -96,46 +94,46 @@ uint64_t decode_base64(const std::string &encoded_string)
   return decoded_int;
 }
 
-
 // SHA256 for hashing public and private keys
 // https://wiki.openssl.org/index.php/EVP_Message_Digests
 
 // Creates a SHA-256 digest from a message
-void create_digest(const unsigned char* message,size_t message_len,
-unsigned char **digest,unsigned int *digest_len
-) 
+void create_digest(const unsigned char *message, size_t message_len,
+                   unsigned char **digest, unsigned int *digest_len)
 {
   EVP_MD_CTX *mdctx;
 
-  if((mdctx=EVP_MD_CTX_new())==NULL)
+  if ((mdctx = EVP_MD_CTX_new()) == NULL)
     handleErrors();
 
-  if(1!=EVP_DigestInit_ex(mdctx,EVP_sha256(),NULL))
-    handleErrors();
-  
-  if(1!=EVP_DigestUpdate(mdctx,message,message_len))
+  if (1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
     handleErrors();
 
-  if((*digest=(unsigned char*)OPENSSL_malloc(EVP_MD_size(EVP_sha256())))==NULL)
+  if (1 != EVP_DigestUpdate(mdctx, message, message_len))
     handleErrors();
 
-  if(1!=EVP_DigestFinal_ex(mdctx,*digest,digest_len))
+  if ((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(EVP_sha256()))) == NULL)
+    handleErrors();
+
+  if (1 != EVP_DigestFinal_ex(mdctx, *digest, digest_len))
     handleErrors();
 
   EVP_MD_CTX_free(mdctx);
 }
 
 // Returns the SHA256 hash of a string as a hexadecimal string
-std::string sha256str(const std::string &msg){
+std::string sha256str(const std::string &msg)
+{
   std::string hash;
-  unsigned char *digest = nullptr;  // pointer to hold binary hash
+  unsigned char *digest = nullptr; // pointer to hold binary hash
   unsigned int digest_len = 0;
 
   create_digest(reinterpret_cast<const unsigned char *>(msg.data()),
                 msg.size(), &digest, &digest_len);
 
-  // convert binary digest to hexadecimal string  
-  for (auto i = 0; i < digest_len;++i){
+  // convert binary digest to hexadecimal string
+  for (auto i = 0; i < digest_len; ++i)
+  {
     std::ostringstream oss;
     oss << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
     hash += oss.str();
@@ -144,7 +142,6 @@ std::string sha256str(const std::string &msg){
   OPENSSL_free(digest);
   return hash;
 }
-
 
 //  The following ASCII conversion functions are currently unused in the project.
 //  They are preserved for potential future use, such as implementing a custom AES scheme.
