@@ -1,9 +1,8 @@
 #include <random>
 #include <cstdint>
 #include "rsa_util.h"
-// #include<iostream>
 
-// Fast Binary Exponentiation: (base ^ exp) % mod
+// Fast Binary Exponentiation: Computes (base ^ exp) % mod
 uint64_t mod_exp(uint64_t base, uint64_t exp, uint64_t mod)
 {
   // __uint128_t for intermediate calculations to prevent overflow
@@ -12,6 +11,7 @@ uint64_t mod_exp(uint64_t base, uint64_t exp, uint64_t mod)
   __uint128_t m = mod;
   __uint128_t currVal = 1;
 
+  // Calculate the bit length of the exponent
   int bit_length = 0;
   __uint128_t exp_dup = e;
   while (exp_dup != 0)
@@ -20,6 +20,7 @@ uint64_t mod_exp(uint64_t base, uint64_t exp, uint64_t mod)
     bit_length += 1;
   }
 
+  // Perform modular exponentiation using Square & Multiply algorithm
   for (int i = bit_length - 1; i >= 0; --i)
   {
     currVal = (currVal * currVal) % m;
@@ -44,8 +45,6 @@ bool primality_check(uint64_t num)
   // decompose n-1 => d.2^m
   uint64_t m = 0;
   uint64_t d = num - 1;
-
-  // Check divisors of n-1
   while (d % 2 == 0)
   {
     d /= 2;
@@ -61,21 +60,20 @@ bool primality_check(uint64_t num)
   while (num_witness > 0)
   {
     num_witness--;
-    uint64_t a = dist(generator); // base
+    uint64_t a = dist(generator); // Random base [2, num-2]
 
-    // b_0 = a^d (mod n)
+    // Compute b_0 = a^d % num
     uint64_t b_0 = mod_exp(a, d, num);
 
+    // If b_0 is not 1 or num-1, perform further checks
     if (b_0 != 1 && b_0 != num - 1)
     {
       bool composite = true;
       for (int i = 0; i < m - 1; ++i)
       {
-
-        // Square and reduce modulo num
-        b_0 = (b_0 * b_0) % num;
+        b_0 = (b_0 * b_0) % num; // Repeated squaring
         if (b_0 == 1)
-          return false;
+          return false; // Found a non-trivial square root of 1
         else if (b_0 == num - 1)
         {
           composite = false;
@@ -86,25 +84,25 @@ bool primality_check(uint64_t num)
         return false;
     }
   }
-  return true;
+  return true; // num is probably prime
 }
 
+// Generates a random 31 bit prime number (2^30 <= p < 2^31)
 uint64_t prime_num_gen()
 {
-  std::random_device rdevice;  // seeding device
-  std::mt19937 gen(rdevice()); // random number generator
-  // Range => 2^30 to 2^31 - 1 => p.q => < 2^63
+  std::random_device rdevice;
+  std::mt19937 gen(rdevice());
   std::uniform_int_distribution<uint64_t> dist((1ULL << 30), (1ULL << 31) - 1);
 
   uint64_t randNum;
   do
   {
-    randNum = dist(gen) | 1;
+    randNum = dist(gen) | 1; // checks if number is odd
   } while (!primality_check(randNum));
   return randNum;
 }
 
-// Eucledian Algorithm for coprimality check: => gcd(e,phi) = 1
+// Check coprimality of two numbers: Returns true if gcd(e, phi) = 1
 bool coprimality_check(uint64_t e, uint64_t phi)
 {
   while (e != 0 && phi != 0)
@@ -122,13 +120,12 @@ bool coprimality_check(uint64_t e, uint64_t phi)
   return (e == 1 || phi == 1);
 }
 
-// Extended Eucledian Algorithm :  computes coefficients x and y
-// Satisfies a.x + b.y = gcd(a,b) for modular inverse compuation
+// Extended Euclidean Algorithm:
+// Computes coefficients x and y such that a*x + b*y = gcd(a, b).
 int64_t eea_coeff(int64_t a, int64_t b)
 {
-
-  // standard EEA notation
-  int64_t x, y, x_0 = 1, x_1 = 0, y_0 = 0, y_1 = 1, q = 1;
+  int64_t x, y;                                      // Bezout coeffs for the equation a*x + b*y = gcd(a, b)
+  int64_t x_0 = 1, x_1 = 0, y_0 = 0, y_1 = 1, q = 1; // starting values
   while (a != 0 && b != 0)
   {
     if (a > b)
@@ -154,13 +151,13 @@ int64_t eea_coeff(int64_t a, int64_t b)
     y_0 = y_1;
     y_1 = y;
   }
-  // std::cout << "x: " << x << " y: " << y;
 
-  // a.a^-1 === 1 mod n
-  // a^-1 = y for assumption: GCD(a,n) = 1
+  // Return y as the modular inverse coefficient (a^-1 mod n)
   return y;
 }
 
+// Modular inverse:
+// Computes a^-1 mod n using the Extended Euclidean Algorithm
 uint64_t mod_inv(uint64_t a, uint64_t n)
 {
   int64_t rawRes = eea_coeff(static_cast<int64_t>(a), static_cast<int64_t>(n)); // resultant coefficient might be negative
@@ -170,7 +167,7 @@ uint64_t mod_inv(uint64_t a, uint64_t n)
       ((rawRes % static_cast<int64_t>(n)) + static_cast<int64_t>(n)) % static_cast<int64_t>(n));
 }
 
-// Euler's totient function => ϕ(n) = (p-1)(q-1)
+// Euler's totient function => ϕ(n) = (p-1)(q-1) for primes p,q
 uint64_t totient(uint64_t p, uint64_t q)
 {
   return (p - 1) * (q - 1);
