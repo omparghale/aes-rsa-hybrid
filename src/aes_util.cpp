@@ -1,7 +1,7 @@
 /*
  * This file uses OpenSSL's AES implementation for message encryption .
  *
- * Rationale:
+ * Purpose:
  * - AES: OpenSSL's AES ensures efficient and secure symmetric encryption. The AES key derived here
  *   is subsequently encrypted using the project's "from-scratch RSA implementation". This highlights
  *   the hybrid encryption workflow while allowing the focus to remain on RSA's foundational principles.
@@ -10,6 +10,8 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
+#include "aes_util.h"
+#include "file_utils.h"
 #include <iostream>
 #include <vector>
 #include <cstdint>
@@ -17,15 +19,15 @@
 #include <stdexcept>
 typedef unsigned char byte;
 
-// Handles OpenSSL errors and terminates the program
+// // Handles openssl errors by printing the error stack and terminates the program
 void handleErrors(void)
 {
-  ERR_print_errors_fp(stderr); // print openssl error stack to stderr
+  ERR_print_errors_fp(stderr);
   abort();
 }
 
-// Generates a 128 bit key or initialization vector (IV)
-std::vector<byte> generate16bytes(size_t len = 16)
+// Generates a random 128 bit key or initialization vector (IV)
+std::vector<byte> generate16bytes(size_t len)
 {
   std::vector<byte> buffer(len);
   if (RAND_bytes(buffer.data(), len) != 1)
@@ -33,24 +35,35 @@ std::vector<byte> generate16bytes(size_t len = 16)
   return buffer;
 }
 
-// Encrypts plaintext using AES-128-CBC
-int encrypt(const byte *plaintext, int plaintext_len,
-            const std::vector<byte> &key, const std::vector<byte> &iv,
-            std::vector<byte> &ciphertext)
-{
-  EVP_CIPHER_CTX *ctx; // Encryption context
-  int len;             // Length of encrypted chunk
-  int ciphertext_len;  // Total length of ciphertext
+// Encrypts plaintext using AES-128-CBC adn writes the result to a file
+//
+// Parameters:
+// - plaintext: Pointer to the plaintext data.
+// - plaintext_len: Length of the plaintext.
+// - key: 128 bit AES key for encryption.
+// - ciphertext: Vector to hold the encrypted data.
+// - filename: File to store the ciphertext and IV.
+//
+// returns: Length of the ciphertext.
 
-  // Create and initialize encryption  context
+int aes_encrypt(const byte *plaintext, int plaintext_len,
+                const std::vector<byte> &key, std::vector<byte> &ciphertext,
+                const std::string &filename)
+{
+  EVP_CIPHER_CTX *ctx;                              // Encryption context
+  int len;                                          // Length of processed chunk
+  int ciphertext_len;                               // Total length of ciphertext
+  const std::vector<byte> iv = generate16bytes(16); // Generate a random IV.
+
+  // Initialize encryption context
   if (!(ctx = EVP_CIPHER_CTX_new()))
     handleErrors();
 
-  // Initialize encryption operation with AES-128-CBC
+  // Set up encryption operation with AES-128-CBC
   if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key.data(), iv.data()))
     handleErrors();
 
-  // Preallocate ciphertext vector for encrypted data
+  // Preallocate space for ciphertext
   ciphertext.resize(plaintext_len + EVP_CIPHER_block_size(EVP_aes_128_cbc()));
 
   // Encrypt the plaintext in chunks
@@ -58,106 +71,73 @@ int encrypt(const byte *plaintext, int plaintext_len,
     handleErrors();
   ciphertext_len = len;
 
-  // Finalise the encryption and handle padding
+  // Finalise encryption (handles padding)
   if (1 != EVP_EncryptFinal_ex(ctx, ciphertext.data() + len, &len))
     handleErrors();
   ciphertext_len += len;
 
-  ciphertext.resize(ciphertext_len); // truncate excess space
+  // resize ciphertext vector to match actual data length
+  ciphertext.resize(ciphertext_len);
 
   // Free the encryption context
   EVP_CIPHER_CTX_free(ctx);
+
+  try
+  {
+    // Save IV and ciphertext to file
+    writeAesCipherText(filename, iv, ciphertext);
+  }
+  catch (const std::exception e)
+  {
+    std::cerr << "Error: " << e.what() << std::endl;
+  }
 
   return ciphertext_len;
 }
 
 // Decrypts ciphertext using AES-128-CBC
-int decrypt(const std::vector<byte> &ciphertext, int ciphertext_len,
-            const std::vector<byte> &key, const std::vector<byte> &iv,
-            std::vector<byte> &decryptedtext)
+//
+// Parameters:
+// - ciphertext: The encrypted data to decrypt.
+// - ciphertext_len: Length of the ciphertext.
+// - key: 128 bit AES key for decryption.
+// - iv: Initialization vector used during encryption.
+// - decryptedtext: Vector to hold the decrypted data.
+//
+// returns: Length of the decrypted plaintext.
+int aes_decrypt(const std::vector<byte> &ciphertext, int ciphertext_len,
+                const std::vector<byte> &key, const std::vector<byte> &iv,
+                std::vector<byte> &decryptedtext)
 {
   EVP_CIPHER_CTX *ctx;   // Decryption context
-  int len;               // Length of decrypted chunk
+  int len;               // Length of processed chunk
   int decryptedtext_len; // Total length of decrypted text
 
-  // Create and initialize decryption context
+  // Initialize decryption context
   if (!(ctx = EVP_CIPHER_CTX_new()))
     handleErrors();
 
-  // Initialise the decryption operation
+  // Set up the decryption operation
   if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key.data(), iv.data()))
     handleErrors();
 
-  decryptedtext.resize(ciphertext_len); // Preallocate space for decryptedtext
+  decryptedtext.resize(ciphertext_len); // Preallocate space for decrypted text
 
   // Decrypt the ciphertext in chunks
   if (1 != EVP_DecryptUpdate(ctx, decryptedtext.data(), &len, ciphertext.data(), ciphertext_len))
     handleErrors();
   decryptedtext_len = len;
 
-  // Finalize decryption and handle padding
+  // Finalize decryption (handles padding)
   if (1 != EVP_DecryptFinal_ex(ctx, decryptedtext.data() + len, &len))
     handleErrors();
   decryptedtext_len += len;
 
-  decryptedtext.resize(decryptedtext_len); // truncate excess space
+  // resize the decrypted plaintext vector to match actual data length
+  decryptedtext.resize(decryptedtext_len);
 
   // Free the decryption context
   EVP_CIPHER_CTX_free(ctx);
 
   return decryptedtext_len;
 }
-
-/*
-int main()
-{
-  // Generate a random 128-bit AES key and initialization vector (IV)
-  std::vector<byte> key = generate16bytes();
-  std::vector<byte> iv = generate16bytes();
-
-  // Plaintext message to encrypt
-  std::string msg = "And sometimes I am sorry when the grass\n"
-                    "Is growing over the stones in quiet hollows\n"
-                    "And the cocksfoot leans across the rutted cart-pass\n"
-                    "That I am not the voice of country fellows\n"
-                    "Who now are standing by some headland talking\n"
-                    "Of turnips and potatoes or young corn\n"
-                    "Of turf banks stripped for victory.\n"
-                    "Here Peace is still hawking\n"
-                    "His coloured combs and scarves and beads of horn.\n\n"
-                    "Upon a headland by a whinny hedge\n"
-                    "A hare sits looking down a leaf-lapped furrow\n"
-                    "There's an old plough upside-down on a weedy ridge\n"
-                    "And someone is shouldering home a saddle-harrow.\n"
-                    "Out of that childhood country what fools climb\n"
-                    "To fight with tyrants Love and Life and Time?";
-
-  const byte *plaintext = reinterpret_cast<const byte *>(msg.data()); // Cast to byte*
-  int plaintext_len = msg.size();
-
-  // Buffers for ciphertext and decrypted text
-  std::vector<byte> ciphertext;
-  std::vector<byte> decryptedtext;
-
-  int decryptedtext_len, ciphertext_len; // Variables to store lengths
-
-  // Encrypt the plaintext
-  ciphertext_len = encrypt(plaintext, plaintext_len, key, iv, ciphertext);
-
-  // Cast ciphertext binaries to a string
-  std::string ciphertext_str(ciphertext.begin(), ciphertext.end());
-  std::cout << "Ciphertext: \n"
-            << ciphertext_str << "\n"
-            << std::endl;
-
-  // Decrypt the ciphertext
-  decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv, decryptedtext);
-
-  // Cast decrypted plaintext binaries to a string
-  std::string decryptedtext_str(decryptedtext.begin(), decryptedtext.end());
-  std::cout << "Decrypted text: \n"
-            << decryptedtext_str << std::endl;
-
-  return 0;
-}
-*/
