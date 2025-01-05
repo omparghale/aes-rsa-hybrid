@@ -15,7 +15,7 @@ While AES uses OpenSSL for reliable symmetric encryption, RSA has been built usi
 ## Features
 ### RSA Implementation from Scratch
 - Key generation (public and private keys).
-- PKCS#1-like padding for secure encryption of small data (AES keys).
+- PKCS#1 padding for secure encryption of small data (AES keys).
 - Modular exponentiation and primality testing (Miller-Rabin).
 - Extended Euclidean Algorithm (EEA) for modular inverses.
 
