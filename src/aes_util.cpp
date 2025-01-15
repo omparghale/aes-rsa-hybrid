@@ -1,17 +1,6 @@
-/*
- * This file uses OpenSSL's AES implementation for message encryption .
- *
- * Purpose:
- * - AES: OpenSSL's AES ensures efficient and secure symmetric encryption. The AES key derived here
- *   is subsequently encrypted using the project's "from-scratch RSA implementation". This highlights
- *   the hybrid encryption workflow while allowing the focus to remain on RSA's foundational principles.
- */
-
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
-#include "aes_util.h"
-#include "file_utils.h"
 #include <iostream>
 #include <vector>
 #include <cstdint>
@@ -47,14 +36,15 @@ std::vector<byte> generate16bytes(size_t len)
 // returns: Length of the ciphertext.
 
 int aes_encrypt(const byte *plaintext, int plaintext_len,
-                const std::vector<byte> &key, std::vector<byte> &ciphertext,
+                const std::vector<byte> &key,
+                const std::vector<byte> &iv,
+                std::vector<byte> &ciphertext,
                 const std::string &filename)
 {
   EVP_CIPHER_CTX *ctx;                              // Encryption context
   int len;                                          // Length of processed chunk
   int ciphertext_len;                               // Total length of ciphertext
-  const std::vector<byte> iv = generate16bytes(16); // Generate a random IV.
-
+  
   // Initialize encryption context
   if (!(ctx = EVP_CIPHER_CTX_new()))
     handleErrors();
@@ -81,17 +71,6 @@ int aes_encrypt(const byte *plaintext, int plaintext_len,
 
   // Free the encryption context
   EVP_CIPHER_CTX_free(ctx);
-
-  try
-  {
-    // Save IV and ciphertext to file
-    writeAesCipherText(filename, iv, ciphertext);
-  }
-  catch (const std::exception e)
-  {
-    std::cerr << "Error: " << e.what() << std::endl;
-  }
-
   return ciphertext_len;
 }
 
