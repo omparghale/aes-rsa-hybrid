@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <fstream>
 #include <sstream>
 #include <cstdint>
 #include <cstring>
@@ -9,6 +8,55 @@
 #include <openssl/evp.h>
 #include "encoding_utils.h"
 #include "aes_util.h"
+
+// SHA256 for hashing public and private keys
+// https://wiki.openssl.org/index.php/EVP_Message_Digests
+
+// Creates a SHA-256 digest from a message
+void create_digest(const unsigned char *message, size_t message_len,
+                   unsigned char **digest, unsigned int *digest_len)
+{
+  EVP_MD_CTX *mdctx;
+
+  if ((mdctx = EVP_MD_CTX_new()) == NULL)
+    handleErrors();
+
+  if (1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
+    handleErrors();
+
+  if (1 != EVP_DigestUpdate(mdctx, message, message_len))
+    handleErrors();
+
+  if ((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(EVP_sha256()))) == NULL)
+    handleErrors();
+
+  if (1 != EVP_DigestFinal_ex(mdctx, *digest, digest_len))
+    handleErrors();
+
+  EVP_MD_CTX_free(mdctx);
+}
+
+// Returns the SHA256 hash of a string as a hexadecimal string
+std::string sha256str(const std::string &msg)
+{
+  std::string hash;
+  unsigned char *digest = nullptr; // pointer to hold binary hash
+  unsigned int digest_len = 0;
+
+  create_digest(reinterpret_cast<const unsigned char *>(msg.data()),
+                msg.size(), &digest, &digest_len);
+
+  // convert binary digest to hexadecimal string
+  for (auto i = 0; i < digest_len; ++i)
+  {
+    std::ostringstream oss;
+    oss << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
+    hash += oss.str();
+  }
+
+  OPENSSL_free(digest);
+  return hash;
+}
 
 // Base64 encoding-decoding logic adapted from René Nyffenegger's implementation
 // (http://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp/).
@@ -92,150 +140,4 @@ uint64_t decode_base64(const std::string &encoded_string)
   }
   memcpy(&decoded_int, decoded.data(), std::min(sizeof(decoded_int), decoded.size()));
   return decoded_int;
-}
-
-// SHA256 for hashing public and private keys
-// https://wiki.openssl.org/index.php/EVP_Message_Digests
-
-// Creates a SHA-256 digest from a message
-void create_digest(const unsigned char *message, size_t message_len,
-                   unsigned char **digest, unsigned int *digest_len)
-{
-  EVP_MD_CTX *mdctx;
-
-  if ((mdctx = EVP_MD_CTX_new()) == NULL)
-    handleErrors();
-
-  if (1 != EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL))
-    handleErrors();
-
-  if (1 != EVP_DigestUpdate(mdctx, message, message_len))
-    handleErrors();
-
-  if ((*digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(EVP_sha256()))) == NULL)
-    handleErrors();
-
-  if (1 != EVP_DigestFinal_ex(mdctx, *digest, digest_len))
-    handleErrors();
-
-  EVP_MD_CTX_free(mdctx);
-}
-
-// Returns the SHA256 hash of a string as a hexadecimal string
-std::string sha256str(const std::string &msg)
-{
-  std::string hash;
-  unsigned char *digest = nullptr; // pointer to hold binary hash
-  unsigned int digest_len = 0;
-
-  create_digest(reinterpret_cast<const unsigned char *>(msg.data()),
-                msg.size(), &digest, &digest_len);
-
-  // convert binary digest to hexadecimal string
-  for (auto i = 0; i < digest_len; ++i)
-  {
-    std::ostringstream oss;
-    oss << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
-    hash += oss.str();
-  }
-
-  OPENSSL_free(digest);
-  return hash;
-}
-
-//  The following ASCII conversion functions are currently unused in the project.
-//  They are preserved for potential future use, such as implementing a custom AES scheme.
-
-// Converts a ASCII value to string
-std::string ascii2text_str(uint64_t num)
-{
-  std::string temp = std::to_string(num);
-  std::string res;
-
-  for (int i = 0; i < temp.length();)
-  {
-    try
-    {
-      if (i + 2 <= temp.length() &&
-          std::stoi(temp.substr(i, 2)) < 99 &&
-          std::stoi(temp.substr(i, 2)) >= 32)
-      {
-        res += static_cast<char>(std::stoi(temp.substr(i, 2)));
-        i += 2;
-      }
-      else if (i + 3 <= temp.length() &&
-               std::stoi(temp.substr(i, 3)) >= 100 &&
-               std::stoi(temp.substr(i, 3)) <= 255)
-      {
-        res += static_cast<char>(std::stoi(temp.substr(i, 3)));
-        i += 3;
-      }
-      else
-      {
-        throw std::invalid_argument("Invalid ascii code");
-      }
-    }
-    catch (const std::exception &e)
-    {
-      std::cerr << "Error: " << e.what() << std::endl;
-      return "";
-    }
-  }
-  return res;
-}
-
-// Reads a file of ASCII values and converts it into a string
-std::string ascii2text_str_file_read(const std::string &path, char delimeter)
-{
-  std::string result, line;
-  std::ifstream f(path);
-
-  if (!f.is_open())
-  {
-    std::cerr << "Error opening the file!";
-    return "";
-  }
-
-  while (std::getline(f, line))
-  {
-    result += line + "\n";
-  }
-
-  f.close();
-
-  std::vector<int> tokens;
-  std::stringstream ss(result);
-  std::string token;
-
-  while (std::getline(ss, token, delimeter)) // delimeter = " "
-  {
-    tokens.push_back(stoi(token));
-  }
-
-  std::string output;
-
-  for (const auto &word : tokens)
-  {
-    output += (char)word;
-  }
-
-  return output;
-}
-
-// Converts a string to its ASCII representation as a concatenated string.
-std::string text2ascii_str(std::string s)
-{
-  std::string res;
-  for (int i = 0; i < s.length(); i++)
-  {
-    res += std::to_string((int)s[i]);
-  }
-  return res;
-}
-
-// Converts a string to its ASCII representation as a 64 bit integer.
-uint64_t text2ascii_int(std::string s)
-{
-  s = text2ascii_str(s);
-  return std::strtoull(s.c_str(), NULL, 0);
 }
