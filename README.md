@@ -9,7 +9,10 @@ This project implements a hybrid encryption system combining:
 This project demonstrates the implementation of both AES and RSA from scratch in C++, built using fundamental cryptographic principles and mathematical concepts.
 
 ## Key Points
-* **Not Production-Ready**: This implementation is designed as a learning exercise. The RSA implementation uses a small 64-bit key size for simplicity and computational feasibility.Real-world systems use much larger keys (e.g., 2048 or 4096 bits) and follow standards like ASN.1/DER for key storage.<br>The AES implementation, while following the standard, doesn't include protections against side-channel attacks.
+* **Not Production-Ready**: This implementation is designed as a learning exercise:
+  - The RSA implementation uses a small 64-bit key size for simplicity and computational feasibility.
+  - Real-world systems use much larger keys (e.g., 2048 or 4096 bits) and follow standards like ASN.1/DER for key storage.
+  - The AES implementation, while following the standard, doesn't include protections against side-channel attacks.
 * **Educational Objective**: The project demonstrates core cryptographic principles but does not aim to match the security or performance of industry-standard libraries
 
 ## Features
@@ -49,7 +52,6 @@ This project demonstrates the implementation of both AES and RSA from scratch in
 
 ### Compilation
 ```bash
-# Windows
 g++ -Iinclude src/*.cpp -o project -lcrypto -lssl
 ```
 Run the program using:
@@ -97,10 +99,9 @@ Note: While OpenSSL is required for compilation, it's only used for SHA-256 hash
 └── logs/                 # Operation logs
 ```
 
-## Reference
+## References
 - This project draws on concepts from *Understanding Cryptography* by Christof Paar and Jan Pelzl, an awesome resource for learning modern cryptographic fundamentals.
 - Base64 encoding/decoding adapted from René Nyffenegger's implementation (http://renenyffenegger.ch/notes/development/Base64/)
 
 ## Conclusion
-This project was inspired by a desire to learn the fundamentals of cryptography and create a meaningful personal project. 
-Thank you for reviewing it, and I hope it serves as a useful introduction to the core principles of public key cryptography and hybrid encryption.
+This project was inspired by a desire to learn the fundamentals of cryptography and create a meaningful personal project.Thank you for reviewing it, and I hope it serves as a useful introduction to the core principles of public key cryptography and hybrid encryption.
