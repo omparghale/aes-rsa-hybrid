@@ -20,10 +20,6 @@
  * - PKCS#7 padding applied to AES-encrypted data.
  * - PKCS#1 padding applied to RSA-encrypted data.
  * - Extensive logging for clarity and debugging.
- *
- * Note:
- * This project is for educational purposes and demonstrates RSA implementation principles.
- * It is not optimized for production use due to limitations in key size and security guarantees.
  */
 
 #include <iostream>
