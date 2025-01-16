@@ -35,99 +35,99 @@
 #include "file_utils.h"
 #include "encoding_utils.h"
 
-int main()
-{
-  rmFile(); // Clear previous log file
-  Logger("Program started");
+// int main()
+// {
+//   rmFile(); // Clear previous log file
+//   Logger("Program started");
 
-  // Get the path to the text file to encrypt
-  std::string file_to_encrypt;
-  std::cout << "Enter the path to your textfile: " << std::endl;
-  std::cin >> file_to_encrypt;
+//   // Get the path to the text file to encrypt
+//   std::string file_to_encrypt;
+//   std::cout << "Enter the path to your textfile: " << std::endl;
+//   std::cin >> file_to_encrypt;
 
-  if (!fileExists(file_to_encrypt))
-  {
-    Logger("Error: File " + file_to_encrypt + " does not exist.");
-    throw std::runtime_error("File not found");
-  }
+//   if (!fileExists(file_to_encrypt))
+//   {
+//     Logger("Error: File " + file_to_encrypt + " does not exist.");
+//     throw std::runtime_error("File not found");
+//   }
 
-  // Read the file content into a string
-  std::string message = getFileContent(file_to_encrypt);
-  int msg_len = message.size();
-  const byte *plaintext = reinterpret_cast<const byte *>(message.data());
+//   // Read the file content into a string
+//   std::string message = getFileContent(file_to_encrypt);
+//   int msg_len = message.size();
+//   const byte *plaintext = reinterpret_cast<const byte *>(message.data());
 
-  Logger("Plaintext file (" + file_to_encrypt + ") read successfully\n");
+//   Logger("Plaintext file (" + file_to_encrypt + ") read successfully\n");
 
-  Logger("===== Encryption Phase =====");
+//   Logger("===== Encryption Phase =====");
 
-  // AES encryption setup
-  Logger("Starting AES encryption of plaintext...");
-  std::vector<byte> aeskey = generate16bytes(); // Generate a random AES key
-  std::vector<byte> iv, aes_ciphertext, aes_decryptedtext;
-  int ciphertext_len, decryptedtext_len;
-  std::string aes_ciphertext_path = "ciphertext/msg_enc.aes";
+//   // AES encryption setup
+//   Logger("Starting AES encryption of plaintext...");
+//   std::vector<byte> aeskey = generate16bytes(); // Generate a random AES key
+//   std::vector<byte> iv, aes_ciphertext, aes_decryptedtext;
+//   int ciphertext_len, decryptedtext_len;
+//   std::string aes_ciphertext_path = "ciphertext/msg_enc.aes";
 
-  // Encrypt message with AES and savit it to a file
-  ciphertext_len = aes_encrypt(plaintext, msg_len, aeskey,
-                               aes_ciphertext, aes_ciphertext_path);
-  Logger("AES ciphertext written to: " + aes_ciphertext_path);
+//   // Encrypt message with AES and savit it to a file
+//   ciphertext_len = aes_encrypt(plaintext, msg_len, aeskey,
+//                                aes_ciphertext, aes_ciphertext_path);
+//   Logger("AES ciphertext written to: " + aes_ciphertext_path);
 
-  // RSA encryption for the AES key
-  RSAcrypt rsa;                         // Initialize RSA cryptography object from rsa.cpp
-  std::vector<uint64_t> rsa_ciphertext; // Encrypted AES key
-  std::vector<byte> rsa_decryptedtext;  // Decrypted AES key
-  std::string pubKey_path = "keys/pubKey.pem";
-  std::string privKey_path = "keys/privKey.pem";
-  std::string rsa_ciphertext_path = "ciphertext/key_enc.bin";
+//   // RSA encryption for the AES key
+//   RSAcrypt rsa;                         // Initialize RSA cryptography object from rsa.cpp
+//   std::vector<uint64_t> rsa_ciphertext; // Encrypted AES key
+//   std::vector<byte> rsa_decryptedtext;  // Decrypted AES key
+//   std::string pubKey_path = "keys/pubKey.pem";
+//   std::string privKey_path = "keys/privKey.pem";
+//   std::string rsa_ciphertext_path = "ciphertext/key_enc.bin";
 
-  // Read key pair
-  uint64_t modulus, k_pub, k_priv;
-  readKey(pubKey_path, modulus, k_pub);
-  readKey(privKey_path, modulus, k_priv);
+//   // Read key pair
+//   uint64_t modulus, k_pub, k_priv;
+//   readKey(pubKey_path, modulus, k_pub);
+//   readKey(privKey_path, modulus, k_priv);
 
-  Logger("RSA keys generated successfully.\n"
-         "                    Public key: " +
-         sha256str(std::to_string(k_pub)) +
-         ",\n                    Private key: " +
-         sha256str(std::to_string(k_priv)) +
-         "\n                    Note: RSA keys are "
-         "hashed (SHA-256) before logging for security purposes.");
-  Logger("Base64 encoded public key exported to: " + pubKey_path);
-  Logger("Base64 encoded private key exported to: " + privKey_path);
+//   Logger("RSA keys generated successfully.\n"
+//          "                    Public key: " +
+//          sha256str(std::to_string(k_pub)) +
+//          ",\n                    Private key: " +
+//          sha256str(std::to_string(k_priv)) +
+//          "\n                    Note: RSA keys are "
+//          "hashed (SHA-256) before logging for security purposes.");
+//   Logger("Base64 encoded public key exported to: " + pubKey_path);
+//   Logger("Base64 encoded private key exported to: " + privKey_path);
 
-  // Encrypt the AES key using RSA and save it to a file
-  Logger("RSA encrypting the AES key using public key...");
-  rsa.rsa_encrypt(k_pub, modulus, aeskey, rsa_ciphertext, rsa_ciphertext_path);
-  Logger("RSA ciphertext (encrypted AES key) saved to: " + rsa_ciphertext_path + "\n");
+//   // Encrypt the AES key using RSA and save it to a file
+//   Logger("RSA encrypting the AES key using public key...");
+//   rsa.rsa_encrypt(k_pub, modulus, aeskey, rsa_ciphertext, rsa_ciphertext_path);
+//   Logger("RSA ciphertext (encrypted AES key) saved to: " + rsa_ciphertext_path + "\n");
 
-  Logger("===== Decryption Phase =====");
+//   Logger("===== Decryption Phase =====");
 
-  // Decrypt the RSA-encrypted AES key
-  Logger("RSA decrypting the AES key using private key...");
-  rsa.rsa_decrypt(k_priv, modulus, rsa_ciphertext, rsa_decryptedtext);
-  Logger("AES key successfully recovered.");
+//   // Decrypt the RSA-encrypted AES key
+//   Logger("RSA decrypting the AES key using private key...");
+//   rsa.rsa_decrypt(k_priv, modulus, rsa_ciphertext, rsa_decryptedtext);
+//   Logger("AES key successfully recovered.");
 
-  // Read the IV and ciphertext from encrypted file
-  readCiphertextIV(aes_ciphertext_path, iv, aes_ciphertext);
-  Logger("AES ciphertext and Initialization Vector (IV) successfully deserialized from: " + aes_ciphertext_path);
+//   // Read the IV and ciphertext from encrypted file
+//   readCiphertextIV(aes_ciphertext_path, iv, aes_ciphertext);
+//   Logger("AES ciphertext and Initialization Vector (IV) successfully deserialized from: " + aes_ciphertext_path);
 
-  // Decrypt the AES-encrypted message using the decrypted AES key
-  Logger("Starting AES decryption of the ciphertext...");
-  decryptedtext_len = aes_decrypt(aes_ciphertext, ciphertext_len,
-                                  rsa_decryptedtext, iv, aes_decryptedtext);
-  Logger("AES decryption completed.");
+//   // Decrypt the AES-encrypted message using the decrypted AES key
+//   Logger("Starting AES decryption of the ciphertext...");
+//   decryptedtext_len = aes_decrypt(aes_ciphertext, ciphertext_len,
+//                                   rsa_decryptedtext, iv, aes_decryptedtext);
+//   Logger("AES decryption completed.");
 
-  // Convert decrypted data back to a string and save to a file
-  std::string decryptedtext_str(aes_decryptedtext.begin(), aes_decryptedtext.end());
-  writeDecrytedMsg("test/decrypted.txt", decryptedtext_str);
-  Logger("Decrypted message exported to: test/decrypted.txt");
+//   // Convert decrypted data back to a string and save to a file
+//   std::string decryptedtext_str(aes_decryptedtext.begin(), aes_decryptedtext.end());
+//   writeDecrytedMsg("test/decrypted.txt", decryptedtext_str);
+//   Logger("Decrypted message exported to: test/decrypted.txt");
 
-  // Verify decrypted message matches original plaintext
-  if (message == decryptedtext_str)
-  {
-    Logger("Decrypted message matches the original plaintext.\n");
-  }
+//   // Verify decrypted message matches original plaintext
+//   if (message == decryptedtext_str)
+//   {
+//     Logger("Decrypted message matches the original plaintext.\n");
+//   }
 
-  Logger("Program finished successfully.");
-  return 0;
-}
+//   Logger("Program finished successfully.");
+//   return 0;
+// }
