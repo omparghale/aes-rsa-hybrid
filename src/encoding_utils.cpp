@@ -13,7 +13,7 @@
 // https://wiki.openssl.org/index.php/EVP_Message_Digests
 
 // Handles openssl errors
-void handleErrors(void)
+static void handleErrors(void)
 {
   ERR_print_errors_fp(stderr);
   abort();
