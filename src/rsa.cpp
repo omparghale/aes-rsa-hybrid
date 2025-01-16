@@ -6,7 +6,6 @@
 #include "rsa.h"
 #include "rsa_util.h"
 #include "encoding_utils.h"
-#include "aes_util.h"
 #include "file_utils.h"
 typedef unsigned char byte;
 

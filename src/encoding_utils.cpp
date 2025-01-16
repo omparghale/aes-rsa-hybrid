@@ -8,7 +8,6 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include "encoding_utils.h"
-#include "aes_util.h"
 
 // SHA256 for hashing public and private keys
 // https://wiki.openssl.org/index.php/EVP_Message_Digests
