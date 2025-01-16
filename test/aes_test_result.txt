@@ -1,0 +1,84 @@
+AES-128-CBC Implementation Test Results
+======================================
+
+Test Vector 1: NIST SP800-38A CBC-AES128.Encrypt
+----------------------------------------
+Key       : 00000000000000000000000000000000
+IV        : 00000000000000000000000000000000
+Plaintext : f34481ec3cc627bacd5dc3fb08f273e6
+
+Encryption Test:
+Expected : 0336763e966d92595a567cc9ce537f5e
+Got      : 0336763e966d92595a567cc9ce537f5e
+Status   : [PASS]
+
+Decryption Test:
+Expected : f34481ec3cc627bacd5dc3fb08f273e6
+Got      : f34481ec3cc627bacd5dc3fb08f273e6
+Status   : [PASS]
+
+Test Vector 2: NIST Sample Test Vector #2
+----------------------------------------
+Key       : fffffffffffffffffffffffff0000000
+IV        : 00000000000000000000000000000000
+Plaintext : 00000000000000000000000000000000
+
+Encryption Test:
+Expected : 307c5b8fcd0533ab98bc51e27a6ce461
+Got      : 307c5b8fcd0533ab98bc51e27a6ce461
+Status   : [PASS]
+
+Decryption Test:
+Expected : 00000000000000000000000000000000
+Got      : 00000000000000000000000000000000
+Status   : [PASS]
+
+Test Vector 3: NIST Sample Test Vector #3
+----------------------------------------
+Key       : 00000000000000000000000000000000
+IV        : 00000000000000000000000000000000
+Plaintext : ffffffffffffffffffffffffff800000
+
+Encryption Test:
+Expected : 63919ed4ce10196438b6ad09d99cd795
+Got      : 63919ed4ce10196438b6ad09d99cd795
+Status   : [PASS]
+
+Decryption Test:
+Expected : ffffffffffffffffffffffffff800000
+Got      : ffffffffffffffffffffffffff800000
+Status   : [PASS]
+
+Test Vector 4: NIST Sample Test Vector #4
+----------------------------------------
+Key       : 00000000000000000000000000000000
+IV        : 00000000000000000000000000000000
+Plaintext : fffffffffffe00000000000000000000
+
+Encryption Test:
+Expected : c2f93a4ce5ab6d5d56f1b93cf19911c1
+Got      : c2f93a4ce5ab6d5d56f1b93cf19911c1
+Status   : [PASS]
+
+Decryption Test:
+Expected : fffffffffffe00000000000000000000
+Got      : fffffffffffe00000000000000000000
+Status   : [PASS]
+
+Test Vector 5: NIST Sample Test Vector #5
+----------------------------------------
+Key       : fffffffffffffffffc00000000000000
+IV        : 00000000000000000000000000000000
+Plaintext : 00000000000000000000000000000000
+
+Encryption Test:
+Expected : ab69cfadf51f8e604d9cc37182f6635a
+Got      : ab69cfadf51f8e604d9cc37182f6635a
+Status   : [PASS]
+
+Decryption Test:
+Expected : 00000000000000000000000000000000
+Got      : 00000000000000000000000000000000
+Status   : [PASS]
+
+Test process completed.
