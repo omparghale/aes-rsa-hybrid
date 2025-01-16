@@ -79,12 +79,13 @@ Note: While OpenSSL is required for compilation, it's only used for SHA-256 hash
 ## File Structure
 ```
 .
-├── include/               # Header files
+├── include/              # Header files
 │   ├── aes_util.h        # AES implementation headers
 │   ├── rsa.h             # RSA core functionality
 │   └── ...               # Other utility headers
 ├── src/                  # Source files
 │   ├── aes.cpp           # AES implementation
+│   ├── aes_openssl.cpp   # Alternative OpenSSL version (not used)
 │   ├── rsa.cpp           # RSA implementation
 │   └── ...               # Utility implementations
 ├── test/                 # Test files
