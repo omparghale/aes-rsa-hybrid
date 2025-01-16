@@ -6,11 +6,19 @@
 #include <cstring>
 #include <iomanip>
 #include <openssl/evp.h>
+#include <openssl/err.h>
 #include "encoding_utils.h"
 #include "aes_util.h"
 
 // SHA256 for hashing public and private keys
 // https://wiki.openssl.org/index.php/EVP_Message_Digests
+
+// Handles openssl errors
+void handleErrors(void)
+{
+  ERR_print_errors_fp(stderr);
+  abort();
+}
 
 // Creates a SHA-256 digest from a message
 void create_digest(const unsigned char *message, size_t message_len,
