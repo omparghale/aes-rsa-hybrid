@@ -14,7 +14,7 @@
 #include <sstream>
 #include <iomanip>
 #include <fstream>
-#include "./aes_util.h"
+#include "include/aes_util.h"
 
 struct TestVector
 {
@@ -91,14 +91,13 @@ void run_test_vector(TestVector test, int test_num, std::ofstream &log_file)
 }
 
 /*
-
 int main()
 {
   // Open log file
-  std::ofstream log_file("./test/test_result.txt");
+  std::ofstream log_file("/test/aes_test_result.txt");
   if (!log_file)
   {
-    std::cerr << "Failed to open ./test/test_result.txt" << std::endl;
+    std::cerr << "Failed to open /test/aes_test_result.txt" << std::endl;
     return 1;
   }
 
@@ -142,7 +141,7 @@ int main()
   log_file << "\nTest process completed." << std::endl;
   log_file.close();
 
-  std::cout << "Test results have been written to ./test/test_result.txt" << std::endl;
+  std::cout << "Test results have been written to /test/aes_test_result.txt" << std::endl;
   return 0;
 }
 */
