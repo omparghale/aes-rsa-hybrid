@@ -36,7 +36,7 @@ void writeAesCipherText(const std::string &filename, const std::vector<byte> &iv
 void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::vector<byte> &ciphertext);
 
 // Write decrypted plaintext to a file
-void writeDecrytedMsg(const std::string &filename, const std::string &str);
+void writeDecrytedMsg(const std::string &filename, const std::string &decrypted_text,const std::string file_to_enc);
 
 // Get the current date or time as a string
 inline std::string getDateTime(const std::string &s)

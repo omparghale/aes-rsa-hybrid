@@ -178,12 +178,15 @@ void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::v
 }
 
 // Writes a decrypted plaintext message to a file.
-void writeDecrytedMsg(const std::string &filename, const std::string &str)
+void writeDecrytedMsg(const std::string &filename,
+                      const std::string &decrypted_text,
+                      const std::string file_to_enc)
 {
   std::ofstream file(filename, std::ios::out);
   if (!file)
     throw std::runtime_error("Failed to open the file to write");
-
-  file << str;
+  file << "Original encrypted file: " << file_to_enc << "\n";
+  file << "----------------------------------------\n";
+  file << decrypted_text;
   file.close();
 }
