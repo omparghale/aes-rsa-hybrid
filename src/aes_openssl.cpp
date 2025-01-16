@@ -8,7 +8,7 @@
 #include <stdexcept>
 typedef unsigned char byte;
 
-// Handles openssl errors 
+// Handles openssl errors
 void handleErrors(void)
 {
   ERR_print_errors_fp(stderr);
@@ -28,13 +28,12 @@ std::vector<byte> generate16bytes(size_t len)
 int aes_encrypt(const byte *plaintext, int plaintext_len,
                 const std::vector<byte> &key,
                 const std::vector<byte> &iv,
-                std::vector<byte> &ciphertext,
-                const std::string &filename)
+                std::vector<byte> &ciphertext)
 {
-  EVP_CIPHER_CTX *ctx;                              // Encryption context
-  int len;                                          
-  int ciphertext_len;                               
-  
+  EVP_CIPHER_CTX *ctx; // Encryption context
+  int len;
+  int ciphertext_len;
+
   // Initialize encryption context
   if (!(ctx = EVP_CIPHER_CTX_new()))
     handleErrors();
@@ -64,9 +63,9 @@ int aes_decrypt(const std::vector<byte> &ciphertext, int ciphertext_len,
                 const std::vector<byte> &key, const std::vector<byte> &iv,
                 std::vector<byte> &decryptedtext)
 {
-  EVP_CIPHER_CTX *ctx;   // Decryption context
-  int len;               
-  int decryptedtext_len; 
+  EVP_CIPHER_CTX *ctx; // Decryption context
+  int len;
+  int decryptedtext_len;
 
   if (!(ctx = EVP_CIPHER_CTX_new()))
     handleErrors();
@@ -92,3 +91,28 @@ int aes_decrypt(const std::vector<byte> &ciphertext, int ciphertext_len,
 
   return decryptedtext_len;
 }
+
+/*
+int main()
+{
+  std::vector<byte> key = generate16bytes(16);
+  std::vector<byte> iv = generate16bytes(16);
+  std::vector<byte> ciphertext, decryptedtext;
+  int pt_len, ct_len, dt_len;
+
+  std::string test = "This is the OPENSSL code for AES-128-CBC in C++";
+  pt_len = test.size();
+  const byte *pt_ptr = reinterpret_cast<const byte *>(test.data());
+  ct_len = aes_encrypt(pt_ptr, pt_len, key, iv, ciphertext);
+  printf("CIPHERTEXT: \n");
+  for (auto ct : ciphertext)
+  {
+    printf("%02x ", ct);
+  }
+  printf("\n\n");
+
+  dt_len = aes_decrypt(ciphertext, ct_len, key, iv, decryptedtext);
+  printf("DECRYPTED TEXT: \n");
+  std::cout << std::string(decryptedtext.begin(), decryptedtext.end());
+}
+*/
