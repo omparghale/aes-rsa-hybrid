@@ -491,6 +491,7 @@ int dec_aes_128_cbc(const std::vector<byte> &key,
   return decryptedtext.size();
 }
 
+/*
 int main()
 {
   std::string str = "Hi! I'm Om, and this is my AES-128-CBC implementation.";
@@ -509,3 +510,4 @@ int main()
   file.close();
   return 0;
 }
+*/
