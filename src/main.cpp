@@ -33,16 +33,13 @@
 #include "file_utils.h"
 #include "encoding_utils.h"
 
-int main()
+int main(int argc,char* argv[])
 {
   rmFile(); // Clear previous log file
   Logger("Program started");
 
   // Get the path to the text file to encrypt
-  std::string file_to_encrypt;
-  std::cout << "Enter the path to your textfile: " << std::endl;
-  std::cin >> file_to_encrypt;
-
+  std::string file_to_encrypt = argv[1];
   if (!fileExists(file_to_encrypt))
   {
     Logger("Error: File " + file_to_encrypt + " does not exist.");
