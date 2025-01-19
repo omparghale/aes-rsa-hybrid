@@ -55,15 +55,15 @@ This project demonstrates the implementation of both AES and RSA from scratch in
 g++ -Iinclude src/*.cpp -o project -lcrypto -lssl
 ```
 Run the program using:
-- Windows: `./project.exe`
-- Linux: `./project`
+- Windows: `./project.exe [plaintext filepath]`
+- Linux: `./project [plaintext filepath]`
 
 Note: While OpenSSL is required for compilation, it's only used for SHA-256 hashing of keys in the logging system. The core cryptographic implementations (AES and RSA) are written entirely from scratch.
 
 ## Usage
 ### Provide a Text File:
 - Place a plaintext file (e.g., `test/test_1.txt`) in the project directory
-- When prompted, enter the path to the plaintext file
+- Pass the file path as a command line argument.
 
 ### Encryption:
 - The plaintext is encrypted using AES-128-CBC, and the AES key is encrypted using RSA
