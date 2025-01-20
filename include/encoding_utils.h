@@ -1,8 +1,8 @@
 #ifndef ENCODING_UTILS_H
 #define ENCODING_UTILS_H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 // Encodes a 64 bit integer to a Base64 string
 std::string encode_base64(const uint64_t &data);

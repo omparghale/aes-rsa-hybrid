@@ -16,8 +16,14 @@ typedef unsigned char byte;
 // Checks if a file exists.
 bool fileExists(const std::string &filename);
 
-// Read file content into a string
-std::string getFileContent(const std::string &filename);
+// Read file content into a buffer
+struct fileContent{
+  std::vector<byte> og_buf;
+  std::vector<byte> padded_buf;
+  size_t filesize;
+};
+
+fileContent getFileContent(const std::string &filename);
 
 // Write an RSA keys(public or private) in Base64 format
 void writeKey(const std::string &filename, uint64_t mod, uint64_t key, const std::string &type);
@@ -36,7 +42,24 @@ void writeAesCipherText(const std::string &filename, const std::vector<byte> &iv
 void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::vector<byte> &ciphertext);
 
 // Write decrypted plaintext to a file
-void writeDecrytedMsg(const std::string &filename, const std::string &decrypted_text,const std::string file_to_enc);
+void writeDecrytedMsg(const std::vector<byte> &decrypted,const std::string filename);
+
+bool areFileIdentical(const std::vector<byte> data1,
+                      const std::vector<byte> data2);
+
+// Get file extension of original file
+inline std::string getFileExtension(const std::string &filepath){
+  size_t last_slash = filepath.find_last_of("/\\");
+  std::string filename = (last_slash == std::string::npos)
+                             ? filepath
+                             : filepath.substr(last_slash + 1);
+  
+  size_t first_dot = filename.find(".");
+  if(first_dot!=std::string::npos){
+    return filename.substr(first_dot);
+  }
+  return "";
+}
 
 // Get the current date or time as a string
 inline std::string getDateTime(const std::string &s)
