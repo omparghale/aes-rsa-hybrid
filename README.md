@@ -46,7 +46,7 @@ This project demonstrates the implementation of both AES and RSA from scratch in
 ## Compilation and Execution
 ### Prerequisites
 * C++11 or later
-* OpenSSL development libraries (used only for SHA-256 hashing in logging)
+* OpenSSL development libraries (used for SHA-256 hashing and secure random number generation)
   * **Linux**: Install with `sudo apt-get install libssl-dev`
   * **Windows**: Ensure OpenSSL is installed and available in your build environment
 
@@ -55,28 +55,29 @@ This project demonstrates the implementation of both AES and RSA from scratch in
 g++ -Iinclude src/*.cpp -o project -lcrypto -lssl
 ```
 Run the program using:
-- Windows: `./project.exe [plaintext filepath]`
-- Linux: `./project [plaintext filepath]`
-
-Note: While OpenSSL is required for compilation, it's only used for SHA-256 hashing of keys in the logging system. The core cryptographic implementations (AES and RSA) are written entirely from scratch.
+- Windows: `./project.exe path/to/your/file`
+- Linux: `./project path/to/your/file`<br>
+example: `./project "test/sample.pdf"`
 
 ## Usage
-### Provide a Text File:
-- Place a plaintext file (e.g., `test/test_1.txt`) in the project directory
-- Pass the file path as a command line argument.
 
 ### Encryption:
-- The plaintext is encrypted using AES-128-CBC, and the AES key is encrypted using RSA
-- Encrypted files:
-  - **AES-encrypted message**: `ciphertext/msg_enc.aes`
-  - **RSA-encrypted AES key**: `ciphertext/key_enc.bin`
+- Place any file you want to encrypt in the test directory
+- The program works with any file format (tested with txt, mp4, xlsx, zip, h, pdf, png)
+- When prompted, enter the path to your file
+
+### Files Created:
+- **AES-encrypted data**: `ciphertext/msg_enc.aes`
+- **RSA-encrypted AES key**: `ciphertext/key_enc.bin`
 
 ### Decryption:
-- The program decrypts the RSA-encrypted AES key, then uses it to decrypt the AES-encrypted message
-- Decrypted file is saved to `test/decrypted.txt`
+- Decrypted file is saved to `test/decrypted.<original_extension>`
+- File integrity is verified using SHA-256 hash comparison
+- Successful decryption is confirmed when original and decrypted file hashes match
 
 ### Logs:
-- Logs for each run are saved in the `logs/` directory
+- Detailed operation logs are saved in `logs/` directory
+- Includes encryption/decryption status and hash verification results
 
 ## File Structure
 ```
