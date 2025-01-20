@@ -1,37 +1,41 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <stdexcept>
-#include <cstdint>
+#include "file_utils.h"
+#include <sys/stat.h>
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
 #include <iterator>
-#include <sys/stat.h>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include "encoding_utils.h"
-#include "file_utils.h"
 
 // Check if a file exists using sys/stat.h functions
-bool fileExists(const std::string &filename)
-{
+bool fileExists(const std::string &filename) {
   struct stat buffer;
   return (stat(filename.c_str(), &buffer) != -1);
 }
 
-// Read contents of a text file into a string
-std::string getFileContent(const std::string &filename)
-{
-  std::string res, line;
-  std::ifstream file(filename);
-  if (!file.is_open())
-    std::cerr << "Error opening text file";
+// Read contents of a file into buffer
+fileContent getFileContent(const std::string &filename) {
+  std::ifstream file(filename, std::ios::in | std::ios::binary);
+  if (!file)
+    throw std::runtime_error("Failed to open file " + std::string(filename));
 
-  while (std::getline(file, line))
-  {
-    res += line + "\n";
-  }
-  file.close();
-  return res;
+  file.seekg(0, std::ios::end);
+  size_t filesize = file.tellg();
+  file.seekg(0, std::ios::beg);
+
+  std::vector<byte> og_buf(filesize);
+  file.read(reinterpret_cast<char *>(og_buf.data()), filesize);
+  file.seekg(0, std::ios::beg);
+
+  size_t padded_size = filesize + (16 - (filesize % 16));
+  std::vector<byte> padded_buf(padded_size);
+  file.read(reinterpret_cast<char *>(padded_buf.data()), padded_size);
+
+  return {og_buf,padded_buf,filesize};
 }
 
 // Writes an RSA key to a file
@@ -41,8 +45,8 @@ std::string getFileContent(const std::string &filename)
 // - mod: RSA modulus.
 // - key: RSA public or private key.
 // - type: Key type ("Public" or "Private").
-void writeKey(const std::string &filename, uint64_t mod, uint64_t key, const std::string &type)
-{
+void writeKey(const std::string &filename, uint64_t mod, uint64_t key,
+              const std::string &type) {
   // convert key type to uppercase for formatting
   std::string header = type;
   std::transform(header.begin(), header.end(), header.begin(), ::toupper);
@@ -69,8 +73,7 @@ void writeKey(const std::string &filename, uint64_t mod, uint64_t key, const std
 // - filename: Path to the key file.
 // - mod: Reference to store the RSA modulus.
 // - key: Reference to store the RSA public or private key.
-void readKey(const std::string &filename, uint64_t &mod, uint64_t &key)
-{
+void readKey(const std::string &filename, uint64_t &mod, uint64_t &key) {
   if (!fileExists(filename))
     throw std::runtime_error("Key file doesn't exist!");
 
@@ -81,19 +84,15 @@ void readKey(const std::string &filename, uint64_t &mod, uint64_t &key)
 
   // Parse the file line by line to extract the modulus and key.
   std::string line, modulus, exponent;
-  while (std::getline(readFile, line))
-  {
-    if (line == "Modulus:")
-    {
+  while (std::getline(readFile, line)) {
+    if (line == "Modulus:") {
       std::getline(readFile, modulus);
-    }
-    else if (line == "Public exponent:" || line == "Private exponent:")
-    {
+    } else if (line == "Public exponent:" || line == "Private exponent:") {
       std::getline(readFile, exponent);
     }
   }
-  mod = decode_base64(modulus);  // Decode the Base64 encoded modulus.
-  key = decode_base64(exponent); // Decode the Base64 encoded key.
+  mod = decode_base64(modulus);   // Decode the Base64 encoded modulus.
+  key = decode_base64(exponent);  // Decode the Base64 encoded key.
 
   readFile.close();
 }
@@ -104,14 +103,14 @@ void readKey(const std::string &filename, uint64_t &mod, uint64_t &key)
 // - filename: Path to the output file.
 // - ciphertext: Vector of chiphertext chunks.
 void writeRsaCiphertext(const std::string &filename,
-                        const std::vector<uint64_t> &ciphertext)
-{
+                        const std::vector<uint64_t> &ciphertext) {
   std::ofstream file(filename, std::ios::out | std::ios::binary);
   if (!file)
     throw std::runtime_error("Failed to open file for writing");
 
   // Write the ciphertext to the file in binary format.
-  file.write(reinterpret_cast<const char *>(ciphertext.data()), sizeof(uint64_t) * ciphertext.size());
+  file.write(reinterpret_cast<const char *>(ciphertext.data()),
+             sizeof(uint64_t) * ciphertext.size());
   if (!file)
     throw std::runtime_error("Failed to write RSA ciphertext into file");
 
@@ -124,8 +123,9 @@ void writeRsaCiphertext(const std::string &filename,
 // - filename: Path to the output file.
 // - iv: AES initialization vector.
 // - ciphertext: AES-encrypted data.
-void writeAesCipherText(const std::string &filename, const std::vector<byte> &iv, const std::vector<byte> &ciphertext)
-{
+void writeAesCipherText(const std::string &filename,
+                        const std::vector<byte> &iv,
+                        const std::vector<byte> &ciphertext) {
   std::ofstream file(filename, std::ios::out | std::ios::binary);
   if (!file)
     throw std::runtime_error("Failed to open file for writing");
@@ -133,9 +133,11 @@ void writeAesCipherText(const std::string &filename, const std::vector<byte> &iv
   // Write the IV and ciphertext sequentially.
   file.write(reinterpret_cast<const char *>(iv.data()), iv.size());
   if (!file)
-    throw std::runtime_error("Failed to write the initialization vector into file");
+    throw std::runtime_error(
+        "Failed to write the initialization vector into file");
 
-  file.write(reinterpret_cast<const char *>(ciphertext.data()), ciphertext.size());
+  file.write(reinterpret_cast<const char *>(ciphertext.data()),
+             ciphertext.size());
   if (!file)
     throw std::runtime_error("Failed to write the ciphertext to the file");
 
@@ -148,13 +150,13 @@ void writeAesCipherText(const std::string &filename, const std::vector<byte> &iv
 // - filename: Path to the input file.
 // - iv: Vector to store the extracted IV. (16 bytes)
 // - ciphertext: Vector to store the extracted ciphertext.
-void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::vector<byte> &ciphertext)
-{
+void readCiphertextIV(const std::string &filename, std::vector<byte> &iv,
+                      std::vector<byte> &ciphertext) {
   std::ifstream file(filename, std::ios::binary);
   if (!file)
     throw std::runtime_error("Failed to open file for reading");
 
-  file.unsetf(std::ios::skipws); // skip whitespaces during reading
+  file.unsetf(std::ios::skipws);  // skip whitespaces during reading
 
   // get filesize
   std::streampos filesize;
@@ -166,8 +168,7 @@ void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::v
   // allocate memory and read file contents into a single vector
   std::vector<byte> data;
   data.reserve(filesize);
-  data.insert(data.begin(),
-              std::istream_iterator<byte>(file),
+  data.insert(data.begin(), std::istream_iterator<byte>(file),
               std::istream_iterator<byte>());
 
   file.close();
@@ -178,15 +179,22 @@ void readCiphertextIV(const std::string &filename, std::vector<byte> &iv, std::v
 }
 
 // Writes a decrypted plaintext message to a file.
-void writeDecrytedMsg(const std::string &filename,
-                      const std::string &decrypted_text,
-                      const std::string file_to_enc)
-{
-  std::ofstream file(filename, std::ios::out);
+void writeDecrytedMsg(const std::vector<byte> &decrypted,
+                      const std::string filename) {
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
   if (!file)
     throw std::runtime_error("Failed to open the file to write");
-  file << "Original encrypted file: " << file_to_enc << "\n";
-  file << "----------------------------------------\n";
-  file << decrypted_text;
+
+  file.write(reinterpret_cast<const char *>(decrypted.data()),
+             decrypted.size());
   file.close();
+}
+
+bool areFileIdentical(const std::vector<byte>data1,const std::vector<byte>data2){
+  if(data1.size()!=data2.size())
+    return false;
+
+  std::string hash1 = sha256str(std::string(data1.begin(),data1.end()));
+  std::string hash2 = sha256str(std::string(data2.begin(),data2.end()));
+  return hash1 == hash2;
 }

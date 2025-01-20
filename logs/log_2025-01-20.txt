@@ -1,0 +1,25 @@
+2025-01-20 12:39:39	Program started
+2025-01-20 12:39:39	Plaintext file (test/test_6_wincrypt.h) read successfully
+
+2025-01-20 12:39:39	===== Encryption Phase =====
+2025-01-20 12:39:39	Starting AES encryption of plaintext...
+2025-01-20 12:39:40	AES ciphertext written to: ciphertext/msg_enc.aes
+2025-01-20 12:39:40	RSA keys generated successfully.
+                    Public key: ada1110aba57ca887c5b705f37df977a87167ba452eeb3d035ad2bdfbba25b5d,
+                    Private key: 017e74fb159a636b6c7e6c68a95cbf027dd7b807382dac02e4934a9426bcd903
+                    Note: RSA keys are hashed (SHA-256) before logging for security purposes.
+2025-01-20 12:39:40	Base64 encoded public key exported to: keys/pubKey.pem
+2025-01-20 12:39:40	Base64 encoded private key exported to: keys/privKey.pem
+2025-01-20 12:39:40	RSA encrypting the AES key using public key...
+2025-01-20 12:39:40	RSA ciphertext (encrypted AES key) saved to: ciphertext/key_enc.bin
+
+2025-01-20 12:39:40	===== Decryption Phase =====
+2025-01-20 12:39:40	RSA decrypting the AES key using private key...
+2025-01-20 12:39:40	AES key successfully recovered.
+2025-01-20 12:39:40	AES ciphertext and Initialization Vector (IV) successfully deserialized from: ciphertext/msg_enc.aes
+2025-01-20 12:39:40	Starting AES decryption of the ciphertext...
+2025-01-20 12:39:40	AES decryption completed.
+2025-01-20 12:39:40	Decrypted message exported to: ./test/decrypted.h
+2025-01-20 12:39:40	Decrypted file matches the original file.
+
+2025-01-20 12:39:40	Program finished successfully.

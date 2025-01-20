@@ -1,0 +1,25 @@
+2025-01-19 13:45:40	Program started
+2025-01-19 13:45:40	Plaintext file (test/test_1.txt) read successfully
+
+2025-01-19 13:45:40	===== Encryption Phase =====
+2025-01-19 13:45:40	Starting AES encryption of plaintext...
+2025-01-19 13:45:40	AES ciphertext written to: ciphertext/msg_enc.aes
+2025-01-19 13:45:40	RSA keys generated successfully.
+                    Public key: 1d4f2950d35f816a23700cadf391673b8baf3bae6bcf9a6917736947a95901eb,
+                    Private key: a835de9c7fc6714c147b260489bb67d8cd3a204ed7de68c56a8ad65c70e35490
+                    Note: RSA keys are hashed (SHA-256) before logging for security purposes.
+2025-01-19 13:45:40	Base64 encoded public key exported to: keys/pubKey.pem
+2025-01-19 13:45:40	Base64 encoded private key exported to: keys/privKey.pem
+2025-01-19 13:45:40	RSA encrypting the AES key using public key...
+2025-01-19 13:45:40	RSA ciphertext (encrypted AES key) saved to: ciphertext/key_enc.bin
+
+2025-01-19 13:45:40	===== Decryption Phase =====
+2025-01-19 13:45:40	RSA decrypting the AES key using private key...
+2025-01-19 13:45:40	AES key successfully recovered.
+2025-01-19 13:45:40	AES ciphertext and Initialization Vector (IV) successfully deserialized from: ciphertext/msg_enc.aes
+2025-01-19 13:45:40	Starting AES decryption of the ciphertext...
+2025-01-19 13:45:40	AES decryption completed.
+2025-01-19 13:45:40	Decrypted message exported to: test/decrypted.txt
+2025-01-19 13:45:40	Decrypted message matches the original plaintext.
+
+2025-01-19 13:45:40	Program finished successfully.
