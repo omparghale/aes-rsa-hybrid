@@ -45,14 +45,14 @@ This project demonstrates the implementation of both AES and RSA from scratch in
 
 ## Compilation and Execution
 ### Prerequisites
-* C++11 or later
+* C++17 or later
 * OpenSSL development libraries (used for SHA-256 hashing and secure random number generation)
   * **Linux**: Install with `sudo apt-get install libssl-dev`
   * **Windows**: Ensure OpenSSL is installed and available in your build environment
 
 ### Compilation
 ```bash
-g++ -Iinclude src/*.cpp -o project -lcrypto -lssl
+g++ -Iinclude src/*.cpp -o project -lcrypto -lssl -std=c++17
 ```
 Run the program using:
 - Windows: `./project.exe path/to/your/file`
