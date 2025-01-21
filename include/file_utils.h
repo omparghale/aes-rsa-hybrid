@@ -13,9 +13,6 @@
 #include "encoding_utils.h"
 typedef unsigned char byte;
 
-// Checks if a file exists.
-bool fileExists(const std::string &filename);
-
 // Read file content into a buffer
 struct fileContent{
   std::vector<byte> og_buf;

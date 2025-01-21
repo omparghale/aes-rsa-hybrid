@@ -32,6 +32,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -48,7 +49,7 @@ int main(int argc, char* argv[]) {
 
   // Get the path to the text file to encrypt
   std::string file_to_encrypt = argv[1];
-  if (!fileExists(file_to_encrypt)) {
+  if (!std::filesystem::exists(file_to_encrypt)) {
     Logger("Error: File " + file_to_encrypt + " does not exist.");
     throw std::runtime_error("File not found");
   }

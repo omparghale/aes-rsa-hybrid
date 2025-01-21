@@ -1,5 +1,5 @@
 #include "file_utils.h"
-#include <sys/stat.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
@@ -9,13 +9,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "encoding_utils.h"
+#include<filesystem>
 
-// Check if a file exists using sys/stat.h functions
-bool fileExists(const std::string &filename) {
-  struct stat buffer;
-  return (stat(filename.c_str(), &buffer) != -1);
-}
+#include "encoding_utils.h"
 
 // Read contents of a file into buffer
 fileContent getFileContent(const std::string &filename) {
@@ -35,7 +31,7 @@ fileContent getFileContent(const std::string &filename) {
   std::vector<byte> padded_buf(padded_size);
   file.read(reinterpret_cast<char *>(padded_buf.data()), padded_size);
 
-  return {og_buf,padded_buf,filesize};
+  return {og_buf, padded_buf, filesize};
 }
 
 // Writes an RSA key to a file
@@ -74,7 +70,7 @@ void writeKey(const std::string &filename, uint64_t mod, uint64_t key,
 // - mod: Reference to store the RSA modulus.
 // - key: Reference to store the RSA public or private key.
 void readKey(const std::string &filename, uint64_t &mod, uint64_t &key) {
-  if (!fileExists(filename))
+  if (!std::filesystem::exists(filename))
     throw std::runtime_error("Key file doesn't exist!");
 
   std::ifstream readFile;
@@ -190,11 +186,12 @@ void writeDecrytedMsg(const std::vector<byte> &decrypted,
   file.close();
 }
 
-bool areFileIdentical(const std::vector<byte>data1,const std::vector<byte>data2){
-  if(data1.size()!=data2.size())
+bool areFileIdentical(const std::vector<byte> data1,
+                      const std::vector<byte> data2) {
+  if (data1.size() != data2.size())
     return false;
 
-  std::string hash1 = sha256str(std::string(data1.begin(),data1.end()));
-  std::string hash2 = sha256str(std::string(data2.begin(),data2.end()));
+  std::string hash1 = sha256str(std::string(data1.begin(), data1.end()));
+  std::string hash2 = sha256str(std::string(data2.begin(), data2.end()));
   return hash1 == hash2;
 }
